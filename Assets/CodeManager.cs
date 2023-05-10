@@ -10,6 +10,8 @@ public class CodeManager : MonoBehaviour
     [SerializeField] private ButtonManager submitButton;
     [SerializeField] private List<PasswordObject> passwordObjects;
 
+    private GameObject currentActiveObject;
+
     private void Start()
     {
         submitButton.onClick.AddListener(CheckPassword);
@@ -23,13 +25,19 @@ public class CodeManager : MonoBehaviour
         {
             if (inputPassword == passwordObject.password)
             {
+                if (currentActiveObject != null)
+                {
+                    currentActiveObject.SetActive(false);
+                }
+
                 passwordObject.associatedObject.SetActive(true);
+                currentActiveObject = passwordObject.associatedObject;
                 Debug.Log("Correct password");
                 return;
             }
         }
 
-        Debug.Log("Incorrect password.");
+        Debug.Log("Incorrect password");
     }
 
     [System.Serializable]
