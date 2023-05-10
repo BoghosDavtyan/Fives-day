@@ -3,69 +3,32 @@ using Michsky.MUIP;
 
 public class QuizManager : MonoBehaviour
 {
-    [SerializeField] private ButtonManager button1;
-    [SerializeField] private ButtonManager button2;
-    [SerializeField] private ButtonManager button3;
-    [SerializeField] private ButtonManager button4;
-
-    [SerializeField] private GameObject incorrectAnswer1;
-    [SerializeField] private GameObject incorrectAnswer2;
-    [SerializeField] private GameObject incorrectAnswer3;
-    [SerializeField] private GameObject correctAnswer;
-
-    private string correctAnswerText;
+    [SerializeField] private ButtonManager incorrectAnswer1;
+    [SerializeField] private ButtonManager incorrectAnswer2;
+    [SerializeField] private ButtonManager incorrectAnswer3;
+    [SerializeField] private ButtonManager correctAnswer;
 
     void Start()
     {
-        SetupQuiz(incorrectAnswer1, incorrectAnswer2, incorrectAnswer3, correctAnswer);
+        SetupQuiz("Incorrect 1", "Incorrect 2", "Incorrect 3", "Correct");
 
-        button1.onClick.AddListener(() => CheckAnswer(button1.buttonText));
-        button2.onClick.AddListener(() => CheckAnswer(button2.buttonText));
-        button3.onClick.AddListener(() => CheckAnswer(button3.buttonText));
-        button4.onClick.AddListener(() => CheckAnswer(button4.buttonText));
+        incorrectAnswer1.onClick.AddListener(() => CheckAnswer(incorrectAnswer1.buttonText));
+        incorrectAnswer2.onClick.AddListener(() => CheckAnswer(incorrectAnswer2.buttonText));
+        incorrectAnswer3.onClick.AddListener(() => CheckAnswer(incorrectAnswer3.buttonText));
+        correctAnswer.onClick.AddListener(() => CheckAnswer(correctAnswer.buttonText));
     }
 
-    private void SetupQuiz(GameObject incAns1, GameObject incAns2, GameObject incAns3, GameObject corrAns)
+    private void SetupQuiz(string ans1, string ans2, string ans3, string correctAns)
     {
-        // Randomly assign answer GameObjects to buttons
-        GameObject[] answers = { incAns1, incAns2, incAns3, corrAns };
-        System.Random rand = new System.Random();
-        for (int i = 0; i < 4; i++)
-        {
-            int index = rand.Next(0, answers.Length - i);
-            ButtonManager button = GetButtonByIndex(i + 1);
-            button.SetText(answers[index].name);
-
-            if (answers[index] == corrAns)
-            {
-                correctAnswerText = answers[index].name;
-            }
-
-            // Remove assigned answer from the array
-            answers[index] = answers[answers.Length - 1 - i];
-        }
-    }
-
-    private ButtonManager GetButtonByIndex(int index)
-    {
-        switch (index)
-        {
-            case 1:
-                return button1;
-            case 2:
-                return button2;
-            case 3:
-                return button3;
-            case 4:
-                return button4;
-            default:
-                return null;
-        }
+        incorrectAnswer1.SetText(ans1);
+        incorrectAnswer2.SetText(ans2);
+        incorrectAnswer3.SetText(ans3);
+        correctAnswer.SetText(correctAns);
     }
 
     private void CheckAnswer(string answer)
     {
-        if (answer == correctAnswerText)
+        if (answer == correctAnswer.buttonText)
         {
             Debug.Log("Correct!");
         }
