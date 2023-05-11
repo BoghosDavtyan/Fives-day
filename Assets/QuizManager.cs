@@ -1,40 +1,23 @@
 using UnityEngine;
+using UnityEngine.UI;
 using Michsky.MUIP;
 
-public class QuizManager : MonoBehaviour
+public class QuizSystem : MonoBehaviour
 {
-    [SerializeField] private ButtonManager incorrectAnswer1;
-    [SerializeField] private ButtonManager incorrectAnswer2;
-    [SerializeField] private ButtonManager incorrectAnswer3;
-    [SerializeField] private ButtonManager correctAnswer;
+    [SerializeField] private ButtonManager buttonManager;
+    [SerializeField] private GameObject gameElement;
+    [SerializeField] private GameObject specificObjectToDisable;
 
-    void Start()
+    private void Start()
     {
-        SetupQuiz("Incorrect 1", "Incorrect 2", "Incorrect 3", "Correct");
-
-        incorrectAnswer1.onClick.AddListener(() => CheckAnswer(incorrectAnswer1.buttonText));
-        incorrectAnswer2.onClick.AddListener(() => CheckAnswer(incorrectAnswer2.buttonText));
-        incorrectAnswer3.onClick.AddListener(() => CheckAnswer(incorrectAnswer3.buttonText));
-        correctAnswer.onClick.AddListener(() => CheckAnswer(correctAnswer.buttonText));
+        // Add event listener for button click
+        buttonManager.onClick.AddListener(OnButtonClick);
     }
 
-    private void SetupQuiz(string ans1, string ans2, string ans3, string correctAns)
+    private void OnButtonClick()
     {
-        incorrectAnswer1.SetText(ans1);
-        incorrectAnswer2.SetText(ans2);
-        incorrectAnswer3.SetText(ans3);
-        correctAnswer.SetText(correctAns);
-    }
-
-    private void CheckAnswer(string answer)
-    {
-        if (answer == correctAnswer.buttonText)
-        {
-            Debug.Log("Correct!");
-        }
-        else
-        {
-            Debug.Log("Incorrect!");
-        }
+        // Enable game element and disable specific object
+        gameElement.SetActive(true);
+        specificObjectToDisable.SetActive(false);
     }
 }
