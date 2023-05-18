@@ -7,13 +7,22 @@ public class QuizButtonController : MonoBehaviour
     [System.Serializable]
     public class ButtonMapping
     {
-        public GameObject buttonParent;
+        public List<GameObject> buttonParents;
         public GameObject targetObject;
         public List<GameObject> objectsToTurnOff;
 
-        public ButtonManager GetButtonManager()
+        public List<ButtonManager> GetButtonManagers()
         {
-            return buttonParent.GetComponentInChildren<ButtonManager>();
+            List<ButtonManager> buttonManagers = new List<ButtonManager>();
+            foreach (var buttonParent in buttonParents)
+            {
+                ButtonManager buttonManager = buttonParent.GetComponentInChildren<ButtonManager>();
+                if (buttonManager != null)
+                {
+                    buttonManagers.Add(buttonManager);
+                }
+            }
+            return buttonManagers;
         }
     }
 
@@ -23,8 +32,11 @@ public class QuizButtonController : MonoBehaviour
     {
         foreach (var mapping in buttonMappings)
         {
-            ButtonManager button = mapping.GetButtonManager();
-            button.onClick.AddListener(() => ToggleGameObject(mapping));
+            List<ButtonManager> buttonManagers = mapping.GetButtonManagers();
+            foreach (var button in buttonManagers)
+            {
+                button.onClick.AddListener(() => ToggleGameObject(mapping));
+            }
         }
     }
 

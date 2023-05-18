@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Michsky.MUIP;
 
-public class QuizSystem : MonoBehaviour
+public class QuizManager : MonoBehaviour
 {
     [SerializeField] private ButtonManager buttonManager;
     [SerializeField] private GameObject gameElement;
