@@ -9,7 +9,7 @@ import html
 import uuid
 import random
 from typing import Optional
-from queue import Queue, Empty  # <--- MODIFIED: Added Empty for timeout exception
+from queue import Queue
 import threading
 
 from github import Github, UnknownObjectException
@@ -41,7 +41,7 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_REPO = "BoghosDavtyan/Fives-day"  # e.g., "johndoe/my-accounts-list"
 GITHUB_FILE_PATH = "accounts.txt"  # The file in the repo to append accounts to
 
-SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogImFub24iLAogICJpc3MiOiAic3VwYWJhYmFzZSIsICJpYXQiOiAxNzM0OTY5NjAwLAogICJleHAiOiAxODkyNzM2MDAwCn0.4NnK23LGYvKPGuKI5rwQn2KbLMzzdE4jXpHwbGCqPqY"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogImFub24iLAogICJpc3MiOiAic3VwYWJhc2UiLAogICJpYXQiOiAxNzM0OTY5NjAwLAogICJleHAiOiAxODkyNzM2MDAwCn0.4NnK23LGYvKPGuKI5rwQn2KbLMzzdE4jXpHwbGCqPqY"
 
 BASE_AUTH_HEADERS = {
     "Accept": "*/*", "Accept-Language": "en-US,en;q=0.9", "apikey": SUPABASE_ANON_KEY,
@@ -129,7 +129,23 @@ def load_sources_from_file(filename: str) -> list[str]:
         return []
 
 
-# Removed progress_monitor function from here as it's now internal to proxy_scraper_checker
+def progress_monitor(q: Queue, pbar: tqdm):
+    item = q.get()
+    if isinstance(item, tuple) and item[0] == "TOTAL":
+        pbar.total = item[1]
+        pbar.refresh()
+    else:
+        pbar.update(1)
+
+    while True:
+        item = q.get()
+        if item is None:
+            if pbar.n < pbar.total:
+                pbar.n = pbar.total
+                pbar.refresh()
+            break
+        pbar.update(1)
+
 
 def find_verification_link(email_body_str: str) -> str | None:
     try:
@@ -276,6 +292,7 @@ def main():
         thread = threading.Thread(target=worker, args=(proxy_queue, results_queue), daemon=True)
         thread.start()
 
+    # --- This is now a single execution block, not an infinite loop ---
     print(f"\n{'#' * 25} Starting Proxy Scraping Cycle {'#' * 25}")
 
     http_proxy_sources = load_sources_from_file(PROXY_SOURCES_FILE)
@@ -284,13 +301,26 @@ def main():
         return  # Exit the script
 
     print("[INFO] Scraping and checking proxies from provided online sources...")
-    # The proxy_scraper_checker library now handles its own progress display.
-    proxies = proxy_scraper_checker.get_proxies(
-        http_urls=http_proxy_sources,
-        socks4_urls=SOCKS4_PROXY_SOURCES,
-        socks5_urls=SOCKS5_PROXY_SOURCES
-        # No progress_queue argument here for proxy_scraper_checker v0.1.0 as it's not needed/expected
-    )
+    proxies = []
+    try:
+        q = Queue()
+        pbar = tqdm(desc="Checking Proxies", unit=" proxy", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt}")
+        monitor_thread = threading.Thread(target=progress_monitor, args=(q, pbar), daemon=True)
+        monitor_thread.start()
+
+        proxies = proxy_scraper_checker.get_proxies(
+            http_urls=http_proxy_sources,
+            socks4_urls=SOCKS4_PROXY_SOURCES,
+            socks5_urls=SOCKS5_PROXY_SOURCES,
+            progress_queue=q
+        )
+        monitor_thread.join()
+        pbar.close()
+
+    except Exception as e:
+        if 'pbar' in locals() and pbar: pbar.close()
+        print(f"\n[FATAL] An error occurred while running the proxy scraper: {e}")
+        return  # Exit the script
 
     if not proxies:
         print("\n[WARN] The proxy scraper returned no working proxies for this run.")
@@ -306,19 +336,9 @@ def main():
     for proxy in proxies:
         proxy_queue.put(proxy)
 
-    # MODIFIED: Added timeout for results_queue.get() to prevent main thread from hanging
     with tqdm(total=num_proxies, desc="Creating Accounts", unit="proxy") as creation_pbar:
-        for i in range(num_proxies):
-            try:
-                # Wait for a result, but for a maximum of 60 seconds.
-                # If a worker thread hangs, we don't want to block indefinitely.
-                result = results_queue.get(timeout=60) 
-            except Empty:
-                # If no result appears after the timeout, assume the worker is stuck/failed.
-                # Log a warning and count it as a failure, then continue processing.
-                tqdm.write(f"[WARN] Result collection timed out for proxy {i+1}. Assuming failure for this attempt.")
-                result = "FAILURE" # Assign a failure status to account for the hung worker
-            
+        for _ in range(num_proxies):
+            result = results_queue.get()
             if result == "SUCCESS_BALANCE":
                 stats["bal"] += 1
             elif result == "SUCCESS_ZERO":
@@ -326,7 +346,7 @@ def main():
             else:  # FAILURE
                 stats["fail"] += 1
 
-            creation_pbar.set_postfix(stats, refresh=True) # Ensure progress bar updates
+            creation_pbar.set_postfix(stats, refresh=False)
             creation_pbar.update(1)
 
     print("\n[INFO] This workflow run has completed.")
