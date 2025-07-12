@@ -1,11 +1,31 @@
-name: Continuous Account Creation
+name: Continuous Account Creation (Parallel)
 'on':
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch: null
 jobs:
   create-accounts:
+    strategy:
+      fail-fast: false
+      matrix:
+        job_id:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
     runs-on: ubuntu-latest
+    name: 'Create Account (Job ${{ matrix.job_id }})'
     permissions:
       contents: write
     steps:
