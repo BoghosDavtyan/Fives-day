@@ -1240,3 +1240,4 @@ e0a726740a@teihu.com:9d347053ec740c
 4b32639076@oakon.com:eec790f61645b0
 283bec3fd5@oakon.com:f0bcdd9138eebd
 d6c26015bc@pastryofistanbul.com:2bbb46ab56c807
+28f0e72937@teihu.com:970959b6c905a4
