@@ -75,3 +75,5 @@ https://raw.githubusercontent.com/murtaja89/public-proxies/refs/heads/main/proxi
 https://raw.githubusercontent.com/Skillter/ProxyGather/refs/heads/master/proxies/working-proxies-http.txt
 https://raw.githubusercontent.com/gfpcom/free-proxy-list/main/list/http.txt
 https://raw.githubusercontent.com/gfpcom/free-proxy-list/main/list/https.txt
+https://raw.githubusercontent.com/zebbern/Proxy-Scraper/refs/heads/main/http.txt
+https://raw.githubusercontent.com/zebbern/Proxy-Scraper/refs/heads/main/https.txt
