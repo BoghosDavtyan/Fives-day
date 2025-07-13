@@ -77,3 +77,5 @@ https://raw.githubusercontent.com/gfpcom/free-proxy-list/main/list/http.txt
 https://raw.githubusercontent.com/gfpcom/free-proxy-list/main/list/https.txt
 https://raw.githubusercontent.com/zebbern/Proxy-Scraper/refs/heads/main/http.txt
 https://raw.githubusercontent.com/zebbern/Proxy-Scraper/refs/heads/main/https.txt
+https://raw.githubusercontent.com/fyvri/fresh-proxy-list/archive/storage/classic/http.txt
+https://raw.githubusercontent.com/fyvri/fresh-proxy-list/archive/storage/classic/https.txt
